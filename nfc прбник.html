@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NFC Reader</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: Arial, sans-serif;
+        }
+        button {
+            padding: 15px 30px;
+            font-size: 18px;
+            margin: 20px;
+            cursor: pointer;
+        }
+        #result {
+            margin-top: 20px;
+            font-size: 16px;
+            color: #333;
+        }
+        .error {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <button onclick="startNFCScan()">Сканировать NFC</button>
+    <div id="result"></div>
+
+    <script>
+        const resultDiv = document.getElementById('result');
+
+        // Проверка поддержки Web NFC
+        if (!('NDEFReader' in window)) {
+            showError('Web NFC не поддерживается вашим браузером.');
+        }
+
+        async function startNFCScan() {
+            try {
+                const reader = new NDEFReader();
+                
+                // Начать сканирование
+                await reader.scan();
+                
+                // Обработка обнаруженной NFC-метки
+                reader.onreading = event => {
+                    // Серийный номер находится в идентификаторе метки
+                    const serialNumber = bytesToHexString(event.serialNumber);
+                    resultDiv.textContent = `Серийный номер: ${serialNumber}`;
+                };
+
+            } catch (error) {
+                showError(`Ошибка: ${error.message}`);
+            }
+        }
+
+        // Преобразование байтов в HEX-строку
+        function bytesToHexString(bytes) {
+            return Array.from(bytes)
+                .map(byte => byte.toString(16).padStart(2, '0'))
+                .join(':');
+        }
+
+        function showError(message) {
+            resultDiv.classList.add('error');
+            resultDiv.textContent = message;
+        }
+    </script>
+</body>
+</html>
